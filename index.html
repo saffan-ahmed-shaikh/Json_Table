@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON TABLE</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <style>
+        .myeditbtn {
+            background-color: #1473ff;
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+        }
+
+        td {
+            font-size: 15px;
+        }
+
+        .myeditbtn.bg {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="mystyle">
+        <div class="text-end p-3"><button class="btn btn-primary" onclick="addAndEditDetails(null,'add')">+ Add</button>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Sr. No</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Director</th>
+                    <th scope="col">Genres</th>
+                    <th scope="col">Year</th>
+                    <th scope="col">Hero</th>
+                    <th scope="col">Heroine</th>
+                    <th scope="col">Music Director</th>
+                    <th scope="col">Box Office</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Rating</th>
+                    <th scope="col">Update</th>
+                    <th scope="col">Delete</th>
+                </tr>
+            </thead>
+            <tbody id="mydataview"></tbody>
+        </table>
+        <h2 id="errorMsg" class="text-center text-danger">No data found</h2>
+    </section>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form class="modal-content" id="myForm" onsubmit="return detailsSubmitFun(event)">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel"><span id="modalTitle">Add</span> Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="myFormContainer">
+                        <div class="mb-3">
+                            <label for="titleInputCntrl" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="titleInputCntrl" placeholder="Write here...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="dirInputCntrl" class="form-label">Director</label>
+                            <input type="text" class="form-control" id="dirInputCntrl" placeholder="Write here...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="genreInpCntrl" class="form-label">Genres</label>
+                            <input type="text" class="form-control" id="genreInpCntrl" placeholder="Write here...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="yearInpcntrl" class="form-label">Year</label>
+                            <input type="text" class="form-control" id="yearInpcntrl" placeholder="Write here...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="heroInpcntrl" class="form-label">Hero</label>
+                            <input type="text" class="form-control" id="heroInpcntrl" placeholder="Write here...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="heroineInpcntrl" class="form-label">Heroine</label>
+                            <input type="text" class="form-control" id="heroineInpcntrl" placeholder="Write here...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="musicInpcntrl" class="form-label">Music Director</label>
+                            <input type="text" class="form-control" id="musicInpcntrl" placeholder="Write here...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="boxofficeInpcntrl" class="form-label">Box Office</label>
+                            <input type="text" class="form-control" id="boxofficeInpcntrl" placeholder="Write here...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="timeInpcntrl" class="form-label">Time</label>
+                            <input type="text" class="form-control" id="timeInpcntrl" placeholder="Write here...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="rateInpcntrl" class="form-label">Rating</label>
+                            <input type="text" class="form-control" id="rateInpcntrl" placeholder="Write here...">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        var myModal = new bootstrap.Modal(document.getElementById('exampleModal'), {
+            keyboard: false
+        });
+
+        function readTextFile(file, callback) {
+            var rawFile = new XMLHttpRequest();
+            rawFile.overrideMimeType("application/json");
+            rawFile.open("GET", file, true);
+            rawFile.onreadystatechange = function () {
+                if (rawFile.readyState === 4 && rawFile.status == "200") {
+                    callback(rawFile.responseText);
+                } else {
+                    if (rawFile.readyState === 4) {
+                        alert("Error something went wrong!");
+                    }
+                }
+            }
+            rawFile.send(null);
+        }
+
+        //usage:
+        var globalData;
+        var editModeIs = false;
+        var selectedObj = {};
+        var getDataFromLocalStrg = localStorage.getItem("myStdntInfoData");
+        if (getDataFromLocalStrg) {
+            globalData = JSON.parse(getDataFromLocalStrg);
+            updateData(globalData);
+        } else {
+            readTextFile("safwan.json", function (text) {
+                var data = JSON.parse(text);
+                globalData = data;
+                updateData(data);
+            });
+        }
+
+        function myDeleteFun(data) {
+
+            for (let i = 0; i < globalData.length; i++) {
+                const element = globalData[i];
+                if (element.id == data.id) {
+                    globalData.splice(i, 1);
+                    break;
+                }
+            }
+            updateData(globalData);
+        }
+
+        //Update And Create
+        function updateData(data) {
+            count = 0;
+            document.getElementById("mydataview").innerHTML = "";
+
+            for (var i = 0; i < data.length; i++) {
+                let element = data[i];
+
+                // Code for Edit Button
+                var editbtntd = document.createElement("td");
+                editbtntd.innerHTML = "<button class='myeditbtn btn' onclick='addAndEditDetails(" + JSON
+                    .stringify(
+                        element) +
+                    ",\"edit\")'>Edit</button>";
+
+                // Code for Delete Button
+                var delbtntd = document.createElement("td");
+                var mydelbtn = "<button class='btn bg myeditbtn' onclick='myDeleteFun(" + JSON.stringify(element) +
+                    ")'>Delete</button>";
+
+                // Code for Data 
+                var tr = document.createElement("tr");
+                var SerialNo = document.createElement("td");
+                var titleName = document.createElement("td");
+                var director = document.createElement("td");
+                var moviegenres = document.createElement("td");
+                var movieYear = document.createElement("td");
+                var hero = document.createElement("td");
+                var heroine = document.createElement("td");
+                var music_director = document.createElement("td");
+                var boxOffice = document.createElement("td");
+                var time = document.createElement("td");
+                var rating = document.createElement("td");
+                count++
+                SerialNo.innerHTML = count;
+                titleName.innerHTML = element.title;
+                director.innerHTML = element.director;
+                moviegenres.innerHTML = element.genres;
+                movieYear.innerHTML = element.year;
+                hero.innerHTML = element.hero;
+                heroine.innerHTML = element.heroine;
+                music_director.innerHTML = element.music_director;
+                boxOffice.innerHTML = element.boxOffice;
+                time.innerHTML = element.time;
+                rating.innerHTML = element.rating;
+                tr.appendChild(SerialNo);
+                tr.appendChild(titleName);
+                tr.appendChild(director);
+                tr.appendChild(moviegenres);
+                tr.appendChild(movieYear);
+                tr.appendChild(hero);
+                tr.appendChild(heroine);
+                tr.appendChild(music_director);
+                tr.appendChild(boxOffice);
+                tr.appendChild(time);
+                tr.appendChild(rating);
+                tr.appendChild(editbtntd);
+                tr.appendChild(delbtntd);
+                delbtntd.innerHTML = mydelbtn;
+                document.getElementById("mydataview").append(tr)
+
+                localStorage.setItem("myStdntInfoData", JSON.stringify(data));
+                checkData();
+            }
+        }
+
+        // Edit And Add function
+        function addAndEditDetails(getObj, secParam) {
+            myModal.show();
+            if (secParam == "add") {
+                document.getElementById("myForm").reset();
+                document.getElementById("modalTitle").innerHTML = "Add";
+                editModeIs = false;
+            } else {
+                document.getElementById("modalTitle").innerHTML = "Edit";
+                document.getElementById("titleInputCntrl").value = getObj.title;
+                document.getElementById("dirInputCntrl").value = getObj.director;
+                document.getElementById("genreInpCntrl").value = getObj.genres;
+                document.getElementById("yearInpcntrl").value = getObj.year;
+                document.getElementById("heroInpcntrl").value = getObj.hero;
+                document.getElementById("heroineInpcntrl").value = getObj.heroine;
+                document.getElementById("musicInpcntrl").value = getObj.music_director;
+                document.getElementById("boxofficeInpcntrl").value = getObj.boxOffice;
+                document.getElementById("timeInpcntrl").value = getObj.time;
+                document.getElementById("rateInpcntrl").value = getObj.rating;
+                selectedObj = getObj;
+                editModeIs = true;
+            }
+        }
+
+        function detailsSubmitFun(event) {
+            event.preventDefault();
+            var titleInputVal = document.getElementById("titleInputCntrl").value;
+            var directorInputVal = document.getElementById("dirInputCntrl").value;
+            var genresInputVal = document.getElementById("genreInpCntrl").value;
+            var yearInputVal = document.getElementById("yearInpcntrl").value;
+            var heroInputVal = document.getElementById("heroInpcntrl").value;
+            var heroineInputVal = document.getElementById("heroineInpcntrl").value;
+            var musicInputVal = document.getElementById("musicInpcntrl").value;
+            var boxOffInputVal = document.getElementById("boxofficeInpcntrl").value;
+            var timeInputVal = document.getElementById("timeInpcntrl").value;
+            var rateInputVal = document.getElementById("rateInpcntrl").value;
+
+            if (editModeIs) {
+                for (let index = 0; index < globalData.length; index++) {
+                    if (globalData[index].id == selectedObj.id) {
+                        globalData[index].title = titleInputVal;
+                        globalData[index].director = directorInputVal;
+                        globalData[index].genres = genresInputVal;
+                        globalData[index].year = yearInputVal;
+                        globalData[index].hero = heroInputVal;
+                        globalData[index].heroine = heroineInputVal;
+                        globalData[index].music_director = musicInputVal;
+                        globalData[index].boxOffice = boxOffInputVal;
+                        globalData[index].time = timeInputVal;
+                        globalData[index].rating = rateInputVal;
+                        break;
+                    }
+                }
+            } else {
+                var uniqueId = new Date().getTime();
+                var newObj = {
+                    "id": uniqueId,
+                    "title": titleInputVal,
+                    "director": directorInputVal,
+                    "genres": genresInputVal,
+                    "year": yearInputVal,
+                    "hero": heroInputVal,
+                    "heroine": heroineInputVal,
+                    "music_director": musicInputVal,
+                    "boxOffice": boxOffInputVal,
+                    "time": timeInputVal,
+                    "rating": rateInputVal
+                };
+                globalData.push(newObj);
+            }
+
+            updateData(globalData);
+            document.getElementById("myForm").reset();
+            myModal.hide();
+        }
+
+        function checkData() {
+            if (globalData.length > 0) {
+                document.getElementById("errorMsg").style.display = "none";
+            } else {
+                document.getElementById("errorMsg").style.display = "block";
+            }
+        }
+    </script>
+</body>
+
+</html>
