@@ -302,7 +302,25 @@
 
             updateData(globalData);
             document.getElementById("myForm").reset();
-            myModal.hide();
+            inputVal(titleInputVal, directorInputVal, genresInputVal, yearInputVal,
+                heroInputVal, heroineInputVal, musicInputVal, boxOffInputVal, timeInputVal,
+                rateInputVal)
+        }
+
+        function inputVal(titleInputVal, directorInputVal, genresInputVal, yearInputVal,
+            heroInputVal, heroineInputVal, musicInputVal, boxOffInputVal, timeInputVal,
+            rateInputVal) {
+            var ifAllInputsHaveValidated = false;
+            var name_regex = /^[a-zA-Z^]{2,30}$/;
+            if (name_regex.test(titleInputVal, directorInputVal, genresInputVal, heroInputVal, musicInputVal)) {
+                alert("Successful")
+                ifAllInputsHaveValidated = true
+            } else {
+                alert("Something Error Occured")
+            }
+            if (ifAllInputsHaveValidated) {
+                myModal.hide();
+            }
         }
 
         function checkData() {
