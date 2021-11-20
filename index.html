@@ -196,8 +196,7 @@
                 var boxOffice = document.createElement("td");
                 var time = document.createElement("td");
                 var rating = document.createElement("td");
-                count++
-                SerialNo.innerHTML = count;
+                SerialNo.innerHTML = count += 1;
                 titleName.innerHTML = element.title;
                 director.innerHTML = element.director;
                 moviegenres.innerHTML = element.genres;
@@ -223,10 +222,10 @@
                 tr.appendChild(delbtntd);
                 delbtntd.innerHTML = mydelbtn;
                 document.getElementById("mydataview").append(tr)
-
-                localStorage.setItem("myStdntInfoData", JSON.stringify(data));
-                checkData();
             }
+            localStorage.setItem("myStdntInfoData", JSON.stringify(data));
+            checkData();
+
         }
 
         // Edit And Add function
